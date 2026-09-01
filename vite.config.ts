@@ -3,9 +3,9 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
   return {
-    base: process.env.GITHUB_PAGES ? '/reclameRGE/' : './',
+    base: './',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
