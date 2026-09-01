@@ -1,6 +1,6 @@
 {
-  "name": "Calculadora Conta de Luz Procon Taquara",
-  "description": "Verifique se o aumento da sua conta de luz da RGE está dentro do reajuste oficial da Aneel (14,11%) e gere o modelo de reclamação para o Procon de Taquara.",
+  "name": "Triagem e Contestação Conta de Luz Taquara",
+  "description": "Ferramenta cidadã de triagem preliminar, conferência tarifária e preparação de documentos para o Procon de Taquara / RS.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

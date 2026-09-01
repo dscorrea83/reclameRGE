@@ -1,6 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist';
 // Import worker through Vite URL resolution
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import { TipoLeitura } from '../types';
 
 if (typeof window !== 'undefined') {
   try {
@@ -15,6 +16,8 @@ export interface ExtractedBillData {
   period: string; // YYYY-MM
   valor: number | '';
   consumo: number | '';
+  diasFaturados?: number;
+  tipoLeitura?: TipoLeitura;
   uc?: string;
   nomeCliente?: string;
   endereco?: string;
@@ -44,14 +47,13 @@ export async function parsePdfFile(file: File): Promise<ExtractedBillData> {
     }
   } catch (pdfErr) {
     console.warn('Standard PDF.js worker parsing had an issue, attempting stream fallback:', pdfErr);
-    
+
     // Fallback: Read raw ASCII text strings from PDF stream
     try {
       const uint8 = new Uint8Array(arrayBuffer);
       const textDecoder = new TextDecoder('latin1');
       const rawString = textDecoder.decode(uint8);
-      
-      // Extract text inside parentheses in PDF streams e.g. (JUL/2026) (504,32)
+
       const textMatches = rawString.match(/\(([^()]{1,100})\)/g);
       if (textMatches && textMatches.length > 5) {
         fullText = textMatches.map((m) => m.slice(1, -1)).join(' ');
@@ -150,7 +152,6 @@ export function extractDataFromText(text: string, fileName: string = ''): Extrac
   // 2. Extract Value (R$)
   let valor: number | '' = '';
   const valorPatterns = [
-    // RGE specific: "Total a pagar R$ 504,32" or "JUL/2026 24/08/2026 R$ 504,32"
     /(?:TOTAL\s*A\s*PAGAR|VALOR\s*A\s*PAGAR|TOTAL\s*DA\s*NOTA|VALOR\s*TOTAL|TOTAL\s*DISTRIBUIDORA)\s*(?:\(R\$\))?[:\s]*R?\$?\s*([\d\.]+(?:,\d{2}))/i,
     /(?:JUL|JUN|MAI|ABR|MAR|FEV|JAN|DEZ|NOV|OUT|SET|AGO)\/\d{2,4}\s+\d{2}\/\d{2}\/\d{4}\s+R\$\s*([\d\.]+(?:,\d{2}))/i,
     /Total\s+a\s+Pagar\s*\(R\$\)[\s\S]{0,50}?([\d\.]+(?:,\d{2}))/i,
@@ -172,13 +173,9 @@ export function extractDataFromText(text: string, fileName: string = ''): Extrac
   // 3. Extract Consumption (kWh)
   let consumo: number | '' = '';
   const consumoPatterns = [
-    // RGE exact: "Consumo Uso Sistema [KWh]-TUSD JUL/26 kWh 453,0000" or "Consumo - TE JUL/26 kWh 453,0000"
     /Consumo\s+(?:Uso\s+Sistema\s*\[KWh\]-TUSD|TE)\s+[A-Z]{3}\/\d{2}\s+kWh\s+([\d\.]+(?:,\d+)?)/i,
-    // RGE Medidor table: "Energia Ativa-kWh único \d+ \d+ [\d\.,]+ (\d+)"
     /Energia\s+Ativa-kWh\s+único\s+\d+\s+\d+\s+[\d\.,]+\s+(\d+)/i,
-    // History histogram: "JUL 26 llllllllll 453"
     /[A-Z]{3}\s+\d{2}\s+[lI|]+\s+(\d{2,5})\s+\d{1,2}/i,
-    // Standard patterns
     /(?:Consumo\s*Faturado|Consumo\s*Medido|Energia\s*Ativa|kWh\s*Consumido|Consumo\s*no\s*mês|Consumo\s*kWh|Total\s*kWh)[:\s]*([\d\.]+(?:,\d+)?)/i,
     /([\d\.]+(?:,\d+)?)\s*kWh/i,
   ];
@@ -195,7 +192,25 @@ export function extractDataFromText(text: string, fileName: string = ''): Extrac
     }
   }
 
-  // 4. Extract UC / Número da Instalação
+  // 4. Extract Billed Days (Nº de dias faturados)
+  let diasFaturados: number | undefined;
+  const diasMatch = clean.match(/(?:N[ºo]\.?\s*de\s*dias|Dias\s*faturados|Per[íi]odo\s*faturado\s*\(dias\))[:\s]*(\d{1,2})/i);
+  if (diasMatch && diasMatch[1]) {
+    const parsedDias = parseInt(diasMatch[1], 10);
+    if (parsedDias >= 15 && parsedDias <= 45) {
+      diasFaturados = parsedDias;
+    }
+  }
+
+  // 5. Extract Reading Type (Real / Estimada)
+  let tipoLeitura: TipoLeitura | undefined;
+  if (/leitura\s*estimada|estimado|m[ée]dia\s*12\s*meses/i.test(clean)) {
+    tipoLeitura = 'estimada';
+  } else if (/leitura\s*real|leitura\s*normal|lido/i.test(clean)) {
+    tipoLeitura = 'real';
+  }
+
+  // 6. Extract UC / Número da Instalação
   let uc: string | undefined;
   const ucPatterns = [
     /(?:N[úu]mero\s*da\s*UC|Nº\s*da\s*UC|C[óo]digo\s*da\s*Instala[çc][ãa]o|Unidade\s*Consumidora|Seu\s*C[óo]digo)[:\s]*([0-9\.\-\/]{8,20})/i,
@@ -210,7 +225,7 @@ export function extractDataFromText(text: string, fileName: string = ''): Extrac
     }
   }
 
-  // 5. Extract Client Name & Address
+  // 7. Extract Client Name & Address
   let nomeCliente: string | undefined;
   let endereco: string | undefined;
   let cpf: string | undefined;
@@ -234,6 +249,8 @@ export function extractDataFromText(text: string, fileName: string = ''): Extrac
     period,
     valor,
     consumo,
+    diasFaturados,
+    tipoLeitura,
     uc,
     nomeCliente,
     endereco,

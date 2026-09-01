@@ -14,9 +14,9 @@ import { ExtractedBillData } from './utils/pdfParser';
 
 export default function App() {
   const [entries, setEntries] = useState<BillEntry[]>([
-    { id: '1', period: '', valor: '', consumo: '' },
-    { id: '2', period: '', valor: '', consumo: '' },
-    { id: '3', period: '', valor: '', consumo: '' },
+    { id: '1', period: '', valor: '', consumo: '', diasFaturados: 30 },
+    { id: '2', period: '', valor: '', consumo: '', diasFaturados: 30 },
+    { id: '3', period: '', valor: '', consumo: '', diasFaturados: 30 },
   ]);
 
   const [userData, setUserData] = useState<UserComplaintData>({
@@ -26,6 +26,9 @@ export default function App() {
     telefone: '',
     email: '',
     uc: '',
+    protocoloRGE: '',
+    dataProtocoloRGE: '',
+    respostaRGE: '',
     observacoes: '',
   });
 
@@ -36,13 +39,13 @@ export default function App() {
 
   const handleAddRow = () => {
     const newId = String(Date.now());
-    setEntries((prev) => [...prev, { id: newId, period: '', valor: '', consumo: '' }]);
+    setEntries((prev) => [...prev, { id: newId, period: '', valor: '', consumo: '', diasFaturados: 30 }]);
   };
 
   const handleRemoveRow = (id: string) => {
     setEntries((prev) => {
       const updated = prev.filter((e) => e.id !== id);
-      return updated.length > 0 ? updated : [{ id: '1', period: '', valor: '', consumo: '' }];
+      return updated.length > 0 ? updated : [{ id: '1', period: '', valor: '', consumo: '', diasFaturados: 30 }];
     });
   };
 
@@ -54,9 +57,9 @@ export default function App() {
 
   const handleClearAll = () => {
     setEntries([
-      { id: '1', period: '', valor: '', consumo: '' },
-      { id: '2', period: '', valor: '', consumo: '' },
-      { id: '3', period: '', valor: '', consumo: '' },
+      { id: '1', period: '', valor: '', consumo: '', diasFaturados: 30 },
+      { id: '2', period: '', valor: '', consumo: '', diasFaturados: 30 },
+      { id: '3', period: '', valor: '', consumo: '', diasFaturados: 30 },
     ]);
     setResult(null);
     setHasTriedCalculate(false);
@@ -72,9 +75,9 @@ export default function App() {
     const prevM1 = curMonth - 2 <= 0 ? `${curYear - 1}-${String(curMonth - 2 + 12).padStart(2, '0')}` : `${curYear}-${String(curMonth - 2).padStart(2, '0')}`;
 
     setEntries([
-      { id: '1', period: prevM1, valor: 178.5, consumo: 210, fileName: 'fatura_base_1.pdf' },
-      { id: '2', period: prevM2, valor: 184.2, consumo: 215, fileName: 'fatura_base_2.pdf' },
-      { id: '3', period: m3, valor: 498.7, consumo: 220, fileName: 'fatura_recente_contestada.pdf' },
+      { id: '1', period: prevM1, valor: 178.5, consumo: 210, diasFaturados: 30, fileName: 'fatura_referencia_1.pdf' },
+      { id: '2', period: prevM2, valor: 184.2, consumo: 215, diasFaturados: 29, fileName: 'fatura_referencia_2.pdf' },
+      { id: '3', period: m3, valor: 498.7, consumo: 220, diasFaturados: 31, fileName: 'fatura_recente_objeto_analise.pdf' },
     ]);
 
     setUserData((prev) => ({
@@ -85,6 +88,9 @@ export default function App() {
       telefone: prev.telefone || '(51) 99876-5432',
       email: prev.email || 'maria.silva@exemplo.com.br',
       uc: prev.uc || '1004582910',
+      protocoloRGE: prev.protocoloRGE || '20268492019',
+      dataProtocoloRGE: prev.dataProtocoloRGE || '12/08/2026',
+      respostaRGE: prev.respostaRGE || 'Concessionária informou que o faturamento seguiu a leitura do medidor sem apresentar memória de cálculo.',
     }));
 
     setHasTriedCalculate(true);
@@ -121,6 +127,8 @@ export default function App() {
       period: item.period,
       valor: item.valor,
       consumo: item.consumo,
+      diasFaturados: item.diasFaturados || 30,
+      tipoLeitura: item.tipoLeitura,
       fileName: item.fileName,
     }));
 
@@ -131,6 +139,7 @@ export default function App() {
         period: '',
         valor: '',
         consumo: '',
+        diasFaturados: 30,
       });
     }
 
@@ -171,14 +180,14 @@ export default function App() {
             Sua conta de luz veio mais cara? Veja como agir
           </h1>
           <p className="text-sm sm:text-base text-slate-600">
-            Calculadora cidadã e gerador de petição de reclamação para o Procon de Taquara / RS.
+            Ferramenta cidadã de triagem preliminar, conferência tarifária e preparação de documentos para o Procon de Taquara / RS.
           </p>
         </div>
 
         {/* Intro Alert Banner */}
         <IntroAlert />
 
-        {/* Passo 1: Como baixar */}
+        {/* Passo 1: Como baixar e fluxo prudente */}
         <Step1DownloadGuide />
 
         {/* Passo 2: Upload de PDF ou manual */}
@@ -197,7 +206,7 @@ export default function App() {
           onCalculate={handleCalculate}
         />
 
-        {/* Passo 4: Resultados / Diagnóstico */}
+        {/* Passo 4: Resultados / Diagnóstico de Triagem */}
         <div ref={resultsRef}>
           <Step4ResultsView
             result={result}
@@ -205,14 +214,14 @@ export default function App() {
           />
         </div>
 
-        {/* Passo 5: Modelo de Reclamação */}
+        {/* Passo 5: Modelo de Solicitação / Reclamação */}
         <Step5ComplaintLetter
           result={result}
           userData={userData}
           onUpdateUserData={handleUpdateUserData}
         />
 
-        {/* Passo 6: Ressalvas legais e orientações */}
+        {/* Passo 6: Ressalvas legais e canais de atendimento */}
         <Step6LegalNotices />
       </main>
 

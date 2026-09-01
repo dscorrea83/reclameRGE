@@ -1,23 +1,23 @@
 import React from 'react';
-import { Download, ExternalLink, HelpCircle, FileSpreadsheet } from 'lucide-react';
+import { Download, ExternalLink, HelpCircle, FileSpreadsheet, CheckSquare, Camera, MessageSquare } from 'lucide-react';
 
 export const Step1DownloadGuide: React.FC = () => {
   return (
-    <section className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 shadow-sm">
-      <div className="flex items-center gap-2 mb-3">
+    <section className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-4">
+      <div className="flex items-center gap-2">
         <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#1a3a5f] text-white font-bold text-sm">
           1
         </span>
         <h2 className="text-lg sm:text-xl font-bold text-[#1a3a5f]">
-          Baixe suas contas no site da RGE
+          Como obter as faturas e fluxo recomendado de conferência
         </h2>
       </div>
 
-      <p className="text-sm text-slate-600 mb-4 leading-relaxed">
-        Você vai precisar de <strong>três contas</strong>: a que quer contestar (mês mais recente) e as <strong>duas anteriores</strong> para compor a média de consumo. Para baixá-las em PDF, acesse o portal de serviços da RGE:
+      <p className="text-sm text-slate-600 leading-relaxed">
+        A ferramenta utiliza as contas anteriores como <strong>referência de comparação</strong> (modo simplificado de 3 contas ou histórico ampliado). Você pode baixar os documentos completos nos canais oficiais da concessionária:
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
         <a
           href="https://www.rge-rs.com.br/segunda-via-de-conta"
           target="_blank"
@@ -33,7 +33,7 @@ export const Step1DownloadGuide: React.FC = () => {
               <ExternalLink className="w-3.5 h-3.5 text-blue-600 opacity-80" />
             </div>
             <p className="text-xs text-slate-600 mt-1">
-              Emissão rápida da fatura mais recente em PDF (necessário login com e-mail/CPF e senha).
+              Emissão da fatura mais recente em formato PDF completo (DANF3E).
             </p>
           </div>
         </a>
@@ -49,20 +49,48 @@ export const Step1DownloadGuide: React.FC = () => {
           </div>
           <div>
             <div className="font-semibold text-sm text-slate-900 flex items-center gap-1.5">
-              <span>Histórico completo de faturas (CPFL/RGE)</span>
+              <span>Histórico de faturas (CPFL / RGE)</span>
               <ExternalLink className="w-3.5 h-3.5 text-indigo-600 opacity-80" />
             </div>
             <p className="text-xs text-slate-600 mt-1">
-              Permite baixar as contas completas com detalhamento de consumo em <strong>kWh</strong> e encargos.
+              Permite baixar o histórico com detalhamento do consumo faturado em <strong>kWh</strong>.
             </p>
           </div>
         </a>
       </div>
 
-      <div className="flex items-start gap-2.5 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-xs text-amber-900">
+      {/* Recommended 6-step Consumer Flow (Item 7) */}
+      <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+          <CheckSquare className="w-4 h-4 text-blue-600" />
+          <span>Fluxo prudente de orientação ao consumidor:</span>
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs text-slate-700">
+          <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+            <span className="font-bold text-[#1a3a5f]">1. Conferir a fatura</span>: Examine o consumo medido em kWh e a discriminação de valores.
+          </div>
+          <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+            <span className="font-bold text-[#1a3a5f]">2. Fotografar o medidor</span>: Registre a leitura atual do relógio e confira se a leitura foi real ou estimada.
+          </div>
+          <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+            <span className="font-bold text-[#1a3a5f]">3. Avaliar kWh e ciclo</span>: Compare o consumo diário (kWh/dia) considerando os dias faturados.
+          </div>
+          <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+            <span className="font-bold text-[#1a3a5f]">4. Checar itens extras</span>: Verifique se há bandeira tarifária, tributos ou parcelamento de débitos.
+          </div>
+          <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+            <span className="font-bold text-[#1a3a5f]">5. Contatar a RGE</span>: Abra protocolo formal e solicite a memória de cálculo e histórico de leituras.
+          </div>
+          <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+            <span className="font-bold text-[#1a3a5f]">6. Procon / ANEEL</span>: Persistindo a divergência, reúna as contas e acione o Procon ou Consumidor.gov.br.
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-start gap-2.5 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-xs text-amber-950">
         <HelpCircle className="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" />
         <div>
-          <strong>Dica importante sobre o consumo (kWh):</strong> A fatura completa discrimina a quantidade de <strong>kWh</strong> consumidos. Ao informar o consumo, o cálculo avalia o <em>custo real da tarifa por kWh</em>, evitando falsos diagnósticos decorrentes de uso extraordinário de chuveiro ou ar-condicionado. Se não encontrar o kWh, a calculadora ainda funciona usando o valor em R$.
+          <strong>Importância do consumo em kWh:</strong> Informar o consumo em kWh permite calcular o <em>custo médio da fatura por kWh</em>, evitando que o uso sazonal de aparelhos elétricos (como ar-condicionado ou aquecedores) seja interpretado erroneamente como distorção da distribuidora.
         </div>
       </div>
     </section>
