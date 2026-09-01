@@ -1,0 +1,218 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <defs>
+    <!-- Shadow for subtle depth if needed -->
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.08" />
+    </filter>
+  </defs>
+
+  <!-- BACKGROUND: Transparent -->
+
+  <!-- LOWER SPEECH BUBBLE (Slate Blue) -->
+  <g id="lower-bubble">
+    <!-- Bubble Body with tail -->
+    <path
+      d="M 230 418 
+         L 545 418 
+         A 56 56 0 0 1 601 474 
+         L 601 620 
+         A 56 56 0 0 1 545 676 
+         L 285 676 
+         L 240 740 
+         L 238 676 
+         L 230 676 
+         A 56 56 0 0 1 174 620 
+         L 174 474 
+         A 56 56 0 0 1 230 418 Z"
+      fill="#6F889D"
+    />
+  </g>
+
+  <!-- UPPER SPEECH BUBBLE (Light Grey) -->
+  <g id="upper-bubble">
+    <!-- Bubble Body with tail -->
+    <path
+      d="M 444 280 
+         L 759 280 
+         A 56 56 0 0 1 815 336 
+         L 815 458 
+         A 56 56 0 0 1 759 514 
+         L 752 514 
+         L 752 580 
+         L 702 514 
+         L 444 514 
+         A 56 56 0 0 1 388 458 
+         L 388 336 
+         A 56 56 0 0 1 444 280 Z"
+      fill="#D2D4D8"
+    />
+  </g>
+
+  <!-- NEWSBOY CAP (BOINA ESTILIZADA) -->
+  <g id="cap">
+    <!-- Cap Main Dome (Background Base) -->
+    <path
+      d="M 372 238 
+         C 405 160 515 118 675 118 
+         C 725 118 780 135 825 175 
+         C 872 218 880 270 865 315 
+         C 850 360 820 385 780 375 
+         C 725 360 645 285 530 255 
+         C 460 236 405 240 372 238 Z"
+      fill="#688296"
+    />
+
+    <!-- Cap Shading / Volume on Back and Bottom -->
+    <path
+      d="M 675 118 
+         C 730 118 785 135 825 175 
+         C 872 218 880 270 865 315 
+         C 850 360 820 385 780 375 
+         C 735 362 670 305 600 275 
+         C 670 210 705 155 675 118 Z"
+      fill="#526D81"
+    />
+
+    <!-- Cap Top Highlight -->
+    <path
+      d="M 425 210 
+         C 475 155 570 130 675 130 
+         C 620 150 520 175 450 225 Z"
+      fill="#8FA6B8"
+      opacity="0.8"
+    />
+
+    <!-- Back Crease / Seams -->
+    <path
+      d="M 732 135 
+         C 755 200 790 270 835 320"
+      stroke="#222A32"
+      stroke-width="9"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <path
+      d="M 732 135 
+         C 720 205 735 275 765 340"
+      stroke="#222A32"
+      stroke-width="8"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <path
+      d="M 732 135 
+         C 680 180 610 215 535 245"
+      stroke="#222A32"
+      stroke-width="9"
+      stroke-linecap="round"
+      fill="none"
+    />
+
+    <!-- Outer Dome Outline -->
+    <path
+      d="M 372 238 
+         C 405 160 515 118 675 118 
+         C 725 118 780 135 825 175 
+         C 872 218 880 270 865 315 
+         C 850 360 820 385 780 375 
+         C 742 362 690 320 635 285"
+      stroke="#222A32"
+      stroke-width="15"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      fill="none"
+    />
+
+    <!-- Top Button / Pin -->
+    <ellipse
+      cx="732"
+      cy="132"
+      rx="17"
+      ry="12"
+      transform="rotate(-15 732 132)"
+      fill="#3A4D5C"
+      stroke="#222A32"
+      stroke-width="9"
+    />
+
+    <!-- VISOR / BRIM -->
+    <!-- Under-visor shadow fold -->
+    <path
+      d="M 334 286 
+         C 385 245 520 220 740 318 
+         C 670 338 520 345 385 308 
+         C 350 298 338 290 334 286 Z"
+      fill="#2F3E4B"
+    />
+    <!-- Under-visor dark stroke -->
+    <path
+      d="M 334 286 
+         C 430 255 580 260 740 318 
+         C 640 340 500 340 385 308 
+         C 352 298 338 290 334 286 Z"
+      stroke="#222A32"
+      stroke-width="14"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      fill="#2F3E4B"
+    />
+
+    <!-- Upper Visor Curve (Front Lip) -->
+    <path
+      d="M 330 285 
+         C 365 245 470 215 725 305 
+         C 745 312 742 324 720 324 
+         C 530 324 410 305 345 292 
+         C 328 288 322 286 330 285 Z"
+      fill="#688296"
+    />
+
+    <!-- Visor Highlight -->
+    <path
+      d="M 350 275 
+         C 400 242 490 230 650 285 
+         C 520 270 410 270 350 275 Z"
+      fill="#8FA6B8"
+      opacity="0.9"
+    />
+
+    <!-- Visor Main Outer Line -->
+    <path
+      d="M 330 285 
+         C 365 245 470 215 725 305"
+      stroke="#222A32"
+      stroke-width="15"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <path
+      d="M 330 285 
+         C 350 300 450 328 730 320"
+      stroke="#222A32"
+      stroke-width="12"
+      stroke-linecap="round"
+      fill="none"
+    />
+  </g>
+
+  <!-- TYPOGRAPHY: TAQUARA EM FOCO -->
+  <g id="typography">
+    <!-- Rendered as outlined clean vector text matching the uploaded design -->
+    <text
+      x="500"
+      y="815"
+      text-anchor="middle"
+      font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+      font-size="78"
+      font-weight="900"
+      letter-spacing="0.04em"
+      fill="#FFFFFF"
+      stroke="#222A32"
+      stroke-width="4.5"
+      stroke-linejoin="round"
+      paint-order="stroke fill"
+    >
+      TAQUARA EM FOCO
+    </text>
+  </g>
+</svg>
