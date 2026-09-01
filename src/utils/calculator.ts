@@ -99,9 +99,26 @@ export function formatMonthYear(periodStr: string): string {
 
 export function parseNumber(val: number | string | undefined | null): number {
   if (typeof val === 'number') return isNaN(val) ? 0 : val;
-  if (!val) return 0;
-  const clean = String(val).replace(/\./g, '').replace(',', '.').trim();
-  const parsed = parseFloat(clean);
+  if (val === undefined || val === null) return 0;
+
+  let s = String(val).trim();
+  if (!s) return 0;
+
+  // Remove currency prefixes/symbols and spaces
+  s = s.replace(/[R$\s]/g, '');
+
+  if (s.includes(',')) {
+    // Brazilian format: "1.234,56" or "467,37" or "231,56"
+    s = s.replace(/\./g, '').replace(',', '.');
+  } else {
+    // Standard JS / HTML input format: "467.37" or "1234.56" or multiple thousand dots "1.234.567"
+    const dotCount = (s.match(/\./g) || []).length;
+    if (dotCount > 1) {
+      s = s.replace(/\./g, '');
+    }
+  }
+
+  const parsed = parseFloat(s);
   return isNaN(parsed) ? 0 : parsed;
 }
 
