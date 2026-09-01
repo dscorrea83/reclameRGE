@@ -1,6 +1,15 @@
 import React, { useRef, useState } from 'react';
-import { UploadCloud, FileText, CheckCircle2, AlertCircle, Sparkles, Loader2, RefreshCw } from 'lucide-react';
-import { parsePdfFile, ExtractedBillData } from '../utils/pdfParser';
+import {
+  UploadCloud,
+  CheckCircle2,
+  AlertCircle,
+  Sparkles,
+  Loader2,
+  FileCode,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
+import { parsePdfFile, extractDataFromText, ExtractedBillData } from '../utils/pdfParser';
 
 interface Step2UploadDropzoneProps {
   onPdfsLoaded: (extracted: ExtractedBillData[]) => void;
@@ -14,9 +23,12 @@ export const Step2UploadDropzone: React.FC<Step2UploadDropzoneProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPasteHelper, setShowPasteHelper] = useState(false);
+  const [pastedText, setPastedText] = useState('');
   const [statusMessage, setStatusMessage] = useState<{
     type: 'success' | 'warning' | 'info' | 'error';
     text: string;
+    details?: string[];
   } | null>(null);
 
   const handleFiles = async (files: FileList | File[]) => {
@@ -27,7 +39,7 @@ export const Step2UploadDropzone: React.FC<Step2UploadDropzoneProps> = ({
     if (fileArray.length === 0) {
       setStatusMessage({
         type: 'warning',
-        text: 'Por favor, selecione arquivos em formato PDF.',
+        text: 'Por favor, selecione arquivos no formato PDF (como os baixados no app/site da RGE).',
       });
       return;
     }
@@ -39,13 +51,20 @@ export const Step2UploadDropzone: React.FC<Step2UploadDropzoneProps> = ({
     });
 
     const results: ExtractedBillData[] = [];
+    const detailsList: string[] = [];
 
     for (const file of fileArray) {
       try {
         const extracted = await parsePdfFile(file);
         results.push(extracted);
+
+        const periodLabel = extracted.period || 'Mês não id.';
+        const valorLabel = extracted.valor ? `R$ ${extracted.valor.toFixed(2)}` : 'R$ pendente';
+        const kwhLabel = extracted.consumo ? `${extracted.consumo} kWh` : 'kWh pendente';
+        detailsList.push(`📄 ${file.name} ➔ ${periodLabel} | ${valorLabel} | ${kwhLabel}`);
       } catch (err) {
         console.error('Error reading PDF:', err);
+        detailsList.push(`⚠️ ${file.name}: Falha na leitura direta de texto. Preencha na tabela abaixo.`);
       }
     }
 
@@ -57,18 +76,39 @@ export const Step2UploadDropzone: React.FC<Step2UploadDropzoneProps> = ({
       if (recognized === results.length) {
         setStatusMessage({
           type: 'success',
-          text: `✅ ${results.length} fatura(s) processada(s) com sucesso! Confira os dados na tabela abaixo.`,
+          text: `✅ ${results.length} fatura(s) processada(s) com sucesso! Os valores e consumo foram preenchidos na tabela do Passo 3.`,
+          details: detailsList,
         });
       } else {
         setStatusMessage({
           type: 'warning',
-          text: `⚠️ ${results.length} PDF(s) lidos. Alguns dados podem ter ficado em branco na tabela abaixo; por favor, revise e preencha manualmente se necessário.`,
+          text: `⚠️ ${results.length} PDF(s) analisado(s). Alguns campos podem requerer preenchimento manual na tabela abaixo.`,
+          details: detailsList,
         });
       }
     } else {
       setStatusMessage({
         type: 'error',
-        text: 'Não foi possível extrair o texto dos PDFs. Você pode preencher os campos diretamente na tabela do Passo 3.',
+        text: 'Não foi possível extrair automaticamente o texto deste PDF (pode ser uma imagem/foto escaneada). Você pode digitar os valores diretamente na tabela do Passo 3.',
+      });
+    }
+  };
+
+  const handleProcessPastedText = () => {
+    if (!pastedText.trim()) return;
+    const extracted = extractDataFromText(pastedText, 'Texto Colado');
+    if (extracted.valor || extracted.consumo || extracted.period) {
+      onPdfsLoaded([extracted]);
+      setStatusMessage({
+        type: 'success',
+        text: `✅ Dados extraídos do texto: ${extracted.period || 'Mês'} - R$ ${extracted.valor || '--'} (${extracted.consumo || '--'} kWh)`,
+      });
+      setPastedText('');
+      setShowPasteHelper(false);
+    } else {
+      setStatusMessage({
+        type: 'warning',
+        text: 'Não identificamos valores ou datas no texto colado. Por favor, insira os dados na tabela do Passo 3.',
       });
     }
   };
@@ -92,18 +132,19 @@ export const Step2UploadDropzone: React.FC<Step2UploadDropzoneProps> = ({
   };
 
   return (
-    <section className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 shadow-sm">
+    <section id="step-upload-section" className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 shadow-sm">
       <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
         <div className="flex items-center gap-2">
           <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#1a3a5f] text-white font-bold text-sm">
             2
           </span>
           <h2 className="text-lg sm:text-xl font-bold text-[#1a3a5f]">
-            Envie as três contas (ou preencha manualmente)
+            Envie as três faturas PDF (ou preencha a tabela)
           </h2>
         </div>
 
         <button
+          id="btn-sample-data"
           type="button"
           onClick={onLoadSample}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1a3a5f] bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg transition-colors shadow-xs"
@@ -114,10 +155,12 @@ export const Step2UploadDropzone: React.FC<Step2UploadDropzoneProps> = ({
       </div>
 
       <p className="text-sm text-slate-600 mb-4 leading-relaxed">
-        Você pode anexar os <strong>PDFs das faturas</strong> para extração automática ou digitar diretamente na tabela. Seus arquivos são lidos exclusivamente dentro do seu próprio navegador (nenhum documento é transmitido para a internet).
+        Você pode anexar os <strong>PDFs das faturas RGE (DANF3E)</strong> para extração automática do mês, valor (R$) e consumo (kWh), ou digitar diretamente na tabela. O processamento é <strong>100% local e seguro</strong> no seu próprio navegador.
       </p>
 
+      {/* Main Drag & Drop Box */}
       <div
+        id="pdf-dropzone"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -154,7 +197,7 @@ export const Step2UploadDropzone: React.FC<Step2UploadDropzoneProps> = ({
               Arraste e solte os PDFs das suas 3 contas aqui
             </p>
             <p className="text-xs text-slate-500 mt-1">
-              ou clique para selecionar os arquivos no seu computador / celular
+              ou clique para selecionar os arquivos (PDFs digitais da RGE / DANF3E)
             </p>
           </div>
           <div className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
@@ -164,9 +207,11 @@ export const Step2UploadDropzone: React.FC<Step2UploadDropzoneProps> = ({
         </div>
       </div>
 
+      {/* Status Feedback */}
       {statusMessage && (
         <div
-          className={`mt-3 p-3 rounded-lg text-xs sm:text-sm flex items-start gap-2 border ${
+          id="upload-status-alert"
+          className={`mt-3 p-3.5 rounded-lg text-xs sm:text-sm border ${
             statusMessage.type === 'success'
               ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
               : statusMessage.type === 'warning'
@@ -176,14 +221,65 @@ export const Step2UploadDropzone: React.FC<Step2UploadDropzoneProps> = ({
               : 'bg-blue-50 text-blue-900 border-blue-200'
           }`}
         >
-          {statusMessage.type === 'success' ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-          ) : (
-            <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="flex items-start gap-2">
+            {statusMessage.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            )}
+            <span className="font-medium">{statusMessage.text}</span>
+          </div>
+
+          {statusMessage.details && statusMessage.details.length > 0 && (
+            <ul className="mt-2 pl-6 list-disc space-y-1 text-xs opacity-90">
+              {statusMessage.details.map((d, i) => (
+                <li key={i}>{d}</li>
+              ))}
+            </ul>
           )}
-          <span>{statusMessage.text}</span>
         </div>
       )}
+
+      {/* Alternative: Fast text paste accordion */}
+      <div className="mt-3 text-right">
+        <button
+          type="button"
+          onClick={() => setShowPasteHelper(!showPasteHelper)}
+          className="text-xs text-[#2c5f8a] hover:text-[#1a3a5f] inline-flex items-center gap-1 font-medium underline underline-offset-2"
+        >
+          <FileCode className="w-3.5 h-3.5" />
+          <span>Opção alternativa: Colar texto de fatura copiado</span>
+          {showPasteHelper ? (
+            <ChevronUp className="w-3.5 h-3.5" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5" />
+          )}
+        </button>
+
+        {showPasteHelper && (
+          <div className="mt-2 p-3 bg-slate-50 border border-slate-200 rounded-lg text-left">
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Copie e cole aqui o texto da fatura ou do aplicativo RGE:
+            </label>
+            <textarea
+              rows={3}
+              value={pastedText}
+              onChange={(e) => setPastedText(e.target.value)}
+              placeholder="Ex: Ref JUL/2026 ... R$ 504,32 ... Consumo 453 kWh ..."
+              className="w-full text-xs p-2 rounded border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-600 bg-white"
+            />
+            <div className="mt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={handleProcessPastedText}
+                className="px-3 py-1.5 bg-[#1a3a5f] hover:bg-[#2c5f8a] text-white text-xs font-semibold rounded-md transition-colors"
+              >
+                Extrair dados do texto
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </section>
   );
 };

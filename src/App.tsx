@@ -93,14 +93,30 @@ export default function App() {
   const handlePdfsLoaded = (extractedList: ExtractedBillData[]) => {
     if (extractedList.length === 0) return;
 
-    // If UC is found in any bill, auto-fill it
-    const foundUc = extractedList.find((e) => e.uc)?.uc;
-    if (foundUc && !userData.uc) {
-      setUserData((prev) => ({ ...prev, uc: foundUc }));
+    // Auto-fill user data if discovered in invoice
+    const foundWithData = extractedList.find(
+      (e) => e.uc || e.nomeCliente || e.endereco || e.cpf
+    );
+
+    if (foundWithData) {
+      setUserData((prev) => ({
+        ...prev,
+        nome: prev.nome || foundWithData.nomeCliente || '',
+        endereco: prev.endereco || foundWithData.endereco || '',
+        cpf: prev.cpf || (foundWithData.cpf ? foundWithData.cpf.replace(/\*/g, '') : ''),
+        uc: prev.uc || foundWithData.uc || '',
+      }));
     }
 
+    // Sort extracted bills chronologically (oldest to newest)
+    const sortedList = [...extractedList].sort((a, b) => {
+      if (!a.period) return 1;
+      if (!b.period) return -1;
+      return a.period.localeCompare(b.period);
+    });
+
     // Replace or merge into entries
-    const newEntries: BillEntry[] = extractedList.map((item, idx) => ({
+    const newEntries: BillEntry[] = sortedList.map((item, idx) => ({
       id: String(Date.now() + idx),
       period: item.period,
       valor: item.valor,
